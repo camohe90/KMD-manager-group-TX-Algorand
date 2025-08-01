@@ -1,111 +1,96 @@
-import { algo, AlgorandClient } from '@algorandfoundation/algokit-utils'
-import algosdk from 'algosdk';
+import { AlgorandClient, algo } from '@algorandfoundation/algokit-utils';
+import { KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-account-manager'
+import { encodeAddress, Kmd } from 'algosdk';
 
+        const algorand = AlgorandClient.fromConfig({
+        algodConfig: {
+            server: 'https://testnet-api.algonode.cloud',  // TestNet endpoint
+            port: 443,
+            token: '', // Most public APIs (like AlgoNode) don't require a token
+        },
+        kmdConfig: {
+            server: 'http://localhost',    // Local KMD
+            port: 4002,
+            token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        },
+        });
 
-async function main() {
+        // Access clients
+        const algodClient = algorand.client.algod;
+        const kmdClient = algorand.client.kmd;
 
-    const usdcAssetId = 10458941n
-    const decimals = 6
+        // General Const
+        const usdcAssetId = 10458941n
+        const decimals = 6
 
-    let algorand = AlgorandClient.testNet()
-    const kmd = AlgorandClient.defaultLocalNet().client.kmd
-    algorand = algorand.setDefaultValidityWindow(20)
-
-
-    // Create wallets in the KMD with ALIAS and PASSWORD
-
-    //await kmd.createWallet('ACCOUNT_2', '1234')
-
-    // list all created wallets on the MKD
-
-    const wallet_list = await kmd.listWallets();
-    console.log('Wallet list:', wallet_list);
-
-    // select the first wallet to be imported
-    
-    const kmd_wallet = wallet_list.wallets[0].id
-    console.log('Wallet Id for the created account:', kmd_wallet);
-    const handleResp = await kmd.initWalletHandle(kmd_wallet, '1234');
-    const walletHandle = handleResp.wallet_handle_token;
-    console.log(walletHandle)
-  
-    //const keyResp = await kmd.generateKey(walletHandle);
-    //console.log('Generated account address:', keyResp.address);
-
-    const keysResp = await kmd.listKeys(walletHandle);
-    const account_2 = keysResp.addresses[0] // add funds on testnet using the dispenser https://bank.testnet.algorand.network/
-    const account_3 = keysResp.addresses[1]
-    console.log('Wallet 2:', account_2);
-    console.log('Wallet 3:', account_3);
-
-    const account_1 = "KUJC6CV6B2TXO6XOIVVAVM2RHETM3P3U7FZOPUQOOHTDQKWARXRXHKBXDY"
-
-    const payTx = await algorand.createTransaction.payment({
-        sender: account_2,
-        receiver: account_1,
-        amount: algo(0.13),
-        note: new Uint8Array(Buffer.from('KMD TX')),
-        maxFee: algo(0.001)
-      })
-
-
-    const signedTxn = await kmd.signTransaction(walletHandle, '1234', payTx);
-    let txId = await algorand.client.algod.sendRawTransaction(signedTxn).do()
-    console.log('Transaction sent! TxID:', txId)
-    
-    // const optInTx = await algorand.createTransaction.assetOptIn({sender:account_2, assetId: usdcAssetId})
-    // const optInTxSignedTxn = await kmd.signTransaction(walletHandle, '1234', optInTx);
-    // const txId_2 = await algorand.client.algod.sendRawTransaction(optInTxSignedTxn).do()
-    // console.log('Transaction sent! TxID:', txId_2)
-
-    // Step 1. Create raw transactions from algokit-utils
-    const tx1 = await algorand.createTransaction.payment({
-        sender: account_2,
-        receiver: account_3,
-        amount: algo(0.2),
-        note: new Uint8Array(Buffer.from('Tx 1')),
-        staticFee: algo(0.003)
-        })
-
-    const tx2 = await algorand.createTransaction.assetOptIn({
-            sender:account_3, 
-            assetId: usdcAssetId, 
-            staticFee:algo(0)
-        })
-        
-    const tx3 = await algorand.createTransaction.assetTransfer(
-        {
-            sender: account_2, 
-            assetId: usdcAssetId, 
-            amount: BigInt(0.1* 10 ** decimals), 
-            receiver: account_3,
-            staticFee:algo(0)
+        // Get TestNet status
+        async function checkStatus() {
+        const status = await algodClient.status().do();
+        console.log('TestNet status:', status);
         }
-    )
 
-        // Step 2. Assign group ID
-        algosdk.assignGroupID([tx1, tx2, tx3])
+        // Get list wallets in local KMD
+        async function listLocalWallets() {
+        const wallets = await kmdClient.listWallets();
+        console.log('Local KMD wallets:', wallets);
+        }
+        
+    async function main() {
+        
+        console.log("MAIN")
+        const kmdManager = new KmdAccountManager(algorand.client);
 
-        // Step 3. Sign with KMD
-        const signedTx1 = await kmd.signTransaction(walletHandle, '1234', tx1)
-        const signedTx2 = await kmd.signTransaction(walletHandle, '1234', tx2)
-        const signedTx3 = await kmd.signTransaction(walletHandle, '1234', tx3)
-       
+        console.log(listLocalWallets() )
 
-        // Step 4. Send group transaction
-        const txIdFinal = await algorand.client.algod.sendRawTransaction([signedTx1, signedTx2,signedTx3]).do()
+        const account1 = await kmdManager.getOrCreateWalletAccount('account1');
+        // Add funds Algos on testnet using the dispenser https://bank.testnet.algorand.network/
+        const account3 = await kmdManager.getOrCreateWalletAccount('account3');
+    
+       // Opt_in account1
 
-        console.log(`Group transaction sent! First TxID: ${txIdFinal.txid}`)
+        // await algorand.send.assetOptIn({
+        //     signer:account1.signer,
+        //     sender:account1.addr, 
+        //     assetId: usdcAssetId
+        // })
 
+        // Add USDC on testnet to Account 1 using https://dispenser.testnet.aws.algodev.network/
 
+        const groupTx = algorand.newGroup()
 
-            
+        groupTx.addPayment(
+            {
+                signer: account1.signer,
+                sender: account1.addr,
+                receiver: account3.addr,
+                amount: algo(0.23),
+                staticFee: algo(0.003)
+            }
+        )
 
-}
+        groupTx.addAssetOptIn(
+            { 
+                signer:account3.signer,
+                sender:account3.addr, 
+                assetId: usdcAssetId, //10458941n
+                staticFee:algo(0) 
+            })
 
+        groupTx.addAssetTransfer(
+            {
+                signer:account1.signer,
+                sender: account1.addr, 
+                assetId: usdcAssetId, 
+                amount: BigInt(0.1* 10 ** decimals), 
+                receiver: account3.addr,
+                staticFee:algo(0)
+            }
+        )
 
+        const txResult = await groupTx.send()
 
-main();
+        console.log(txResult.groupId)
+    }
 
-
-   
+    
+    main();
