@@ -1,6 +1,8 @@
 import { AlgorandClient, algo } from '@algorandfoundation/algokit-utils';
-import { KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-account-manager'
-import { encodeAddress, Kmd } from 'algosdk';
+import {KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-account-manager'
+import algosdk from 'algosdk';
+
+
 
         const algorand = AlgorandClient.fromConfig({
         algodConfig: {
@@ -32,64 +34,77 @@ import { encodeAddress, Kmd } from 'algosdk';
         // Get list wallets in local KMD
         async function listLocalWallets() {
         const wallets = await kmdClient.listWallets();
-        console.log('Local KMD wallets:', wallets);
+        return wallets;
         }
         
     async function main() {
         
-        console.log("MAIN")
         const kmdManager = new KmdAccountManager(algorand.client);
+               
+        const walletName = 'MasterAccount1'
+        let searchString = "XBXJRUC4WP63T3SWPHPKFX76KAGAQ3CTIBQDM66HQTMBZAIQ52FL7F3G5E";
 
-        console.log(listLocalWallets() )
+            // Retrieve an account whose address contains the search string
 
-        const account1 = await kmdManager.getOrCreateWalletAccount('account1');
-        // Add funds Algos on testnet using the dispenser https://bank.testnet.algorand.network/
-        const account3 = await kmdManager.getOrCreateWalletAccount('account3');
+        const account1= await kmdManager.getWalletAccount(
+            walletName,
+            (a) => a.address.includes(searchString)
+        );
+        if (account1) {
+            console.log(`Matched account address: ${account1.addr}`);
+        } else {
+            console.log('No account matched the search string.');
+        }
+        
+        searchString = "XG2LWX2425QUQV6S7BOGSKQQTJLTO6RL4AXHTUA2AWNQTBSZCM6DGJSPIU";
+
+            // Retrieve an account whose address contains the search string
+
+        const account2= await kmdManager.getWalletAccount(
+            walletName,
+            (a) => a.address.includes(searchString)
+        );
+        if (account2) {
+            console.log(`Matched account address: ${account2.addr}`);
+        } else {
+            console.log('No account matched the search string.');
+        }
     
-       // Opt_in account1
-
-        // await algorand.send.assetOptIn({
-        //     signer:account1.signer,
-        //     sender:account1.addr, 
-        //     assetId: usdcAssetId
-        // })
-
-        // Add USDC on testnet to Account 1 using https://dispenser.testnet.aws.algodev.network/
 
         const groupTx = algorand.newGroup()
 
         groupTx.addPayment(
             {
-                signer: account1.signer,
-                sender: account1.addr,
-                receiver: account3.addr,
-                amount: algo(0.23),
+                signer: account1!.signer,
+                sender: account1!.addr,
+                receiver: account2!.addr,
+                amount: algo(0.20),
                 staticFee: algo(0.003)
             }
         )
 
         groupTx.addAssetOptIn(
             { 
-                signer:account3.signer,
-                sender:account3.addr, 
+                signer:account2!.signer,
+                sender:account2!.addr, 
                 assetId: usdcAssetId, //10458941n
                 staticFee:algo(0) 
             })
 
         groupTx.addAssetTransfer(
             {
-                signer:account1.signer,
-                sender: account1.addr, 
+                signer:account1!.signer,
+                sender: account1!.addr, 
                 assetId: usdcAssetId, 
                 amount: BigInt(0.1* 10 ** decimals), 
-                receiver: account3.addr,
+                receiver: account2!.addr,
                 staticFee:algo(0)
             }
         )
 
         const txResult = await groupTx.send()
 
-        console.log(txResult.groupId)
+       console.log(txResult.groupId)
     }
 
     
