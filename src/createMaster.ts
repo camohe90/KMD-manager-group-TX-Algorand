@@ -3,9 +3,9 @@ import { KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-ac
  
 const algorand = AlgorandClient.fromConfig({
         algodConfig: {
-            server: 'http://localhost',
-            port: 4001,
-            token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            server: 'https://testnet-api.algonode.cloud',  // TestNet endpoint
+            port: 443,
+            token: '', // Most public APIs (like AlgoNode) don't require a token
         },
         kmdConfig: {
             server: 'http://localhost',    // Local KMD

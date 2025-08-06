@@ -7,10 +7,10 @@ import { KmdClient } from 'algosdk/dist/types/client/kmd';
 
     const algorand = AlgorandClient.fromConfig({
             algodConfig: {
-                server: 'http://localhost',
-                port: 4001,
-                token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-            },
+            server: 'https://testnet-api.algonode.cloud',  // TestNet endpoint
+            port: 443,
+            token: '', // Most public APIs (like AlgoNode) don't require a token
+        },
             kmdConfig: {
                 server: 'http://localhost',    // Local KMD
                 port: 4002,
@@ -27,14 +27,9 @@ import { KmdClient } from 'algosdk/dist/types/client/kmd';
     };
 
 
-
     async function main() {
-
-        const kmdManager = new KmdAccountManager(algorand.client);
        
-
-
-       const readWallets = await listLocalWallets()
+        const readWallets = await listLocalWallets()
         
         const kmd_wallet = readWallets.wallets[0].id
 

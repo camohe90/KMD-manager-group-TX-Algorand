@@ -40,9 +40,10 @@ import algosdk from 'algosdk';
     async function main() {
         
         const kmdManager = new KmdAccountManager(algorand.client);
+        console.log(await listLocalWallets())
                
         const walletName = 'MasterAccount1'
-        let searchString = "XBXJRUC4WP63T3SWPHPKFX76KAGAQ3CTIBQDM66HQTMBZAIQ52FL7F3G5E";
+        let searchString = "CHQFDROZSZITFRLEHIAQ775SPY66EZAXKRJZDQDSVXXPTFABUY47STWSSA";
 
             // Retrieve an account whose address contains the search string
 
@@ -50,13 +51,14 @@ import algosdk from 'algosdk';
             walletName,
             (a) => a.address.includes(searchString)
         );
+
         if (account1) {
             console.log(`Matched account address: ${account1.addr}`);
         } else {
             console.log('No account matched the search string.');
         }
         
-        searchString = "XG2LWX2425QUQV6S7BOGSKQQTJLTO6RL4AXHTUA2AWNQTBSZCM6DGJSPIU";
+        searchString = "Z4MTNIC5XE6PP4LUVD7E4JJGUOD27WDKWKQ2XYBHXDYUA7D33L65A7LT7I";
 
             // Retrieve an account whose address contains the search string
 

@@ -3,10 +3,10 @@ import { AlgorandClient, algo} from '@algorandfoundation/algokit-utils';
 
 
     const algorand = AlgorandClient.fromConfig({
-            algodConfig: {
-                server: 'http://localhost',
-                port: 4001,
-                token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+           algodConfig: {
+            server: 'https://testnet-api.algonode.cloud',  // TestNet endpoint
+            port: 443,
+            token: '', // Most public APIs (like AlgoNode) don't require a token
             },
             kmdConfig: {
                 server: 'http://localhost',    // Local KMD
@@ -28,10 +28,10 @@ import { AlgorandClient, algo} from '@algorandfoundation/algokit-utils';
     async function main() {
 
        const walletMDK = new Uint8Array( [
-             53,  66,   1, 121, 245,  96, 109, 113,
-            157, 171,  21, 196, 213,  11, 191, 205,
-            30, 184, 157, 153,  42, 142, 223, 141,
-            16,  18, 241, 193,  50, 242, 165, 140
+            8, 195, 106, 237, 175, 101, 178, 226,
+            41, 109, 197,   9, 193,  28, 250,  21,
+            70,  42,  43, 252,  68,  11, 235,  44,
+            223,  56, 161,  24, 124, 147, 207, 244
         ])
         
 
