@@ -1,6 +1,8 @@
 import { AlgorandClient, algo} from '@algorandfoundation/algokit-utils';
+import dotenv from 'dotenv';
 
 
+dotenv.config(); // Loads .env into process.env
 
     const algorand = AlgorandClient.fromConfig({
            algodConfig: {
@@ -27,14 +29,18 @@ import { AlgorandClient, algo} from '@algorandfoundation/algokit-utils';
 
     async function main() {
 
-       const walletMDK = new Uint8Array( [
-            8, 195, 106, 237, 175, 101, 178, 226,
-            41, 109, 197,   9, 193,  28, 250,  21,
-            70,  42,  43, 252,  68,  11, 235,  44,
-            223,  56, 161,  24, 124, 147, 207, 244
-        ])
-        
+        const mdkBase64 = process.env.MDK_BASE64;
 
+        if (!mdkBase64) {
+             throw new Error('MDK_BASE64 is not defined in .env');
+        }       
+
+        // ✅ Convert Base64 string to Uint8Array
+        const walletMDK = Uint8Array.from(Buffer.from(mdkBase64, 'base64'));
+
+        console.log('Decoded MDK as Uint8Array:', walletMDK);
+
+       
         const walletName = 'MasterAccount1'
         const walletPassword = '';
 

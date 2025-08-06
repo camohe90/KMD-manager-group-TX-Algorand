@@ -1,8 +1,10 @@
 import { AlgorandClient, algo} from '@algorandfoundation/algokit-utils';
 import { KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-account-manager' 
-import algosdk from 'algosdk';
-import { KmdClient } from 'algosdk/dist/types/client/kmd';
- 
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
     const algorand = AlgorandClient.fromConfig({
@@ -25,6 +27,24 @@ import { KmdClient } from 'algosdk/dist/types/client/kmd';
         const wallets = await kmdClient.listWallets();
         return wallets
     };
+
+    function appendWalletAddress(value: string, envPath: string) {
+        // Read existing .env
+        const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+
+        // Find existing GENERATED_WALLET_X keys
+        const walletLines = envContent.match(/GENERATED_WALLET_(\d+)=/g) || [];
+        const counters = walletLines.map(line => parseInt(line.match(/\d+/)![0], 10));
+
+        // Get next counter
+        const nextCounter = counters.length > 0 ? Math.max(...counters) + 1 : 1;
+
+        // Append new wallet entry
+        const newLine = `GENERATED_WALLET_${nextCounter}=${value}`;
+        fs.appendFileSync(envPath, `\n${newLine}`, 'utf8');
+
+        console.log(`✅ Appended GENERATED_WALLET_${nextCounter} to .env`);
+        }
 
 
 
@@ -56,7 +76,15 @@ import { KmdClient } from 'algosdk/dist/types/client/kmd';
         const keyResp = await kmdClient.generateKey(walletHandle);
 
         // Log the newly generated account address
-        console.log('Generated account address:', keyResp.address);
+        const generatedAddress = keyResp.address;
+        console.log('Generated account address:', generatedAddress);
+
+
+        // Append to .env with incremental counter
+        const envPath = path.resolve(process.cwd(), '.env');
+        appendWalletAddress(generatedAddress, envPath);
+
+        await algorand.client.kmd.releaseWalletHandle(walletHandle);
 
     
 }

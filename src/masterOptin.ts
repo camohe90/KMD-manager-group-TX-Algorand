@@ -1,5 +1,7 @@
 import { AlgorandClient, algo} from '@algorandfoundation/algokit-utils';
 import {KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-account-manager'
+import dotenv from 'dotenv';
+dotenv.config();
 
 
         const algorand = AlgorandClient.fromConfig({
@@ -29,7 +31,7 @@ import {KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-acc
             const walletName = 'MasterAccount1';
 
             // Define the string to search for in the account addresses
-            let searchString = "CHQFDROZSZITFRLEHIAQ775SPY66EZAXKRJZDQDSVXXPTFABUY47STWSSA";
+            const searchString = process.env.ACCOUNTMASTER; // make sure to add algos to this account before call the optin https://bank.testnet.algorand.network/
 
             // Attempt to retrieve an account from the wallet that matches the search string in its address
             const account1 = await kmdManager.getWalletAccount(

@@ -1,6 +1,7 @@
 import { AlgorandClient, algo } from '@algorandfoundation/algokit-utils';
 import {KmdAccountManager} from '@algorandfoundation/algokit-utils/types/kmd-account-manager'
-import algosdk from 'algosdk';
+import dotenv from 'dotenv';
+dotenv.config();
 
 
 
@@ -40,10 +41,9 @@ import algosdk from 'algosdk';
     async function main() {
         
         const kmdManager = new KmdAccountManager(algorand.client);
-        console.log(await listLocalWallets())
                
         const walletName = 'MasterAccount1'
-        let searchString = "CHQFDROZSZITFRLEHIAQ775SPY66EZAXKRJZDQDSVXXPTFABUY47STWSSA";
+        let searchString = process.env.ACCOUNTMASTER;
 
             // Retrieve an account whose address contains the search string
 
@@ -58,7 +58,8 @@ import algosdk from 'algosdk';
             console.log('No account matched the search string.');
         }
         
-        searchString = "Z4MTNIC5XE6PP4LUVD7E4JJGUOD27WDKWKQ2XYBHXDYUA7D33L65A7LT7I";
+        searchString = process.env.GENERATED_WALLET_1;
+
 
             // Retrieve an account whose address contains the search string
 
